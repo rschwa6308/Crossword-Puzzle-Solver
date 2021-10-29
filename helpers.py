@@ -1,3 +1,7 @@
+import os
+import termcolor
+
+
 def build_grid(puzzle):
     w = puzzle["size"]["cols"]
     h = puzzle["size"]["rows"]
@@ -25,11 +29,26 @@ def char_map(c):
     return "??"
 
 
-def pprint_grid(grid):
-    h, w = len(grid), len(grid[0])
+def pprint_grid(grid, accuracy_grid=None, incorrect_color="red"):
+    """
+    pretty-print the given grid using unicode block and double-wide chars
 
-    for row in grid:
-        print("".join(map(char_map, row)))
+    if accuracy_grid is supplied, coloring incorrect cells
+    
+    """
+    # h, w = len(grid), len(grid[0])
+    
+    if not accuracy_grid:
+        for row in grid:
+            chars = map(char_map, row)
+            print("".join(chars))
+    else:
+        for row, acc_row in zip(grid, accuracy_grid):
+            chars = map(char_map, row)
+            print("".join(
+                char if correct!=False else termcolor.colored(char, incorrect_color)
+                for char, correct in zip(chars, acc_row)
+            ))
     
 
 
@@ -82,3 +101,11 @@ def pprint_grid_complex(grid):
             ) + "┤"
             print(line_sep)
     print("└─" + "─┴─"*(w-1) + "─┘")
+
+
+
+def get_puzzle_file_paths(data_path):
+    with open(os.path.join(data_path, "manifest.txt")) as f:
+        paths = [l.strip() for l in f.readlines()]
+    
+    return paths
