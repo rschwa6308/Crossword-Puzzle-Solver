@@ -142,6 +142,19 @@ class Puzzle:
         "determine if the current grid is completely filled"
         return all(" " not in row for row in self.grid)
     
+    def grid_fill_percentage(self):
+        "compute the portion of cells which have been filled"
+        total = 0
+        num_filled = 0
+        for row in self.grid:
+            for cell in row:
+                if cell == ".": continue
+                total += 1
+                if cell != " ":
+                    num_filled += 1
+        
+        return num_filled / total
+        
     def get_acc_grid(self):
         "return a grid of booleans representing cell correctness (blocks and empty cells are assigned None)"
         return [

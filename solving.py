@@ -100,6 +100,6 @@ if __name__ == "__main__":
     puzzle = Puzzle(puzzle_dict)
     # pprint_grid(puzzle.solved_grid)
 
-    res = solve_puzzle(puzzle)
-    print(f"Filled grid:\t{res}")
-    print(f"Fill accuracy:\t{puzzle.grid_accuracy():.0%}")
+    solve_puzzle(puzzle)
+    print(f"Fill percentage:   {puzzle.grid_fill_percentage():.0%}")
+    print(f"Fill accuracy:     {puzzle.grid_accuracy():.0%}")
