@@ -82,8 +82,8 @@ def solve_puzzle(puzzle: Puzzle):
 
 
 if __name__ == "__main__":
-    # choose a random puzzle
-    puzzle_paths = get_puzzle_file_paths(DATA_PATH)
+    # choose a random puzzle from an ODD day (EVEN days used for training)
+    puzzle_paths = [puzz for puzz in get_puzzle_file_paths(DATA_PATH) if int(puzz[-7:-5]) % 2 == 1]
     puzzle_path = os.path.join(DATA_PATH, random.choice(puzzle_paths))
     print(f"Opening {puzzle_path}\n")
     with open(puzzle_path) as f:
