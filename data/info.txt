@@ -1,0 +1,8 @@
+Data from https://github.com/doshea/nyt_crosswords
+
+Bad Files:
+ - 2017/12/03
+ - 2018/03/08
+
+Notes:
+ - the provided "answers" do not necessarily match the populated slots given in the "grid" exactly (for example, the answer "ITSTOOLATE" vs "ITS2LATE" in the grid)
