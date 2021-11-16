@@ -101,11 +101,3 @@ def pprint_grid_complex(grid):
             ) + "┤"
             print(line_sep)
     print("└─" + "─┴─"*(w-1) + "─┘")
-
-
-
-def get_puzzle_file_paths(data_path):
-    with open(os.path.join(data_path, "manifest.txt")) as f:
-        paths = [l.strip() for l in f.readlines()]
-    
-    return paths
