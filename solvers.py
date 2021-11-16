@@ -1,7 +1,7 @@
 from typing import Type
 from guessers import BasicGuesser, Guesser
 from puzzle import Puzzle
-from helpers import pprint_grid
+from helpers import pprint_grid, clear_console
 
 
 
@@ -53,10 +53,11 @@ class BasicSolver(Solver):
 
                 clue = puzzle.get_clue(ident)
                 gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
-                # print(f"guesses for {ident}. {clue}: {gs}")
 
                 for g, conf in gs:
                     if compatible(current_slot, g):
+                        clear_console()
+
                         print(f"\nWriting {g:^15} to slot {ident}\tconf: {conf:.0%}\t", end="")
                         if g == puzzle.get_answer(ident):
                             print("(CORRECT ✓)\n")
@@ -79,15 +80,15 @@ class BasicSolverThreshold(Solver):
 
     Only fill in a slot if the guess confidence is above a threshold, which decreases over with time.
 
-    Run for a constant number of epochs (~5)
+    Run until threshold hits a minimum degeneracy point (say, 5% confidence)
     """
 
     guesser_class: Type[Guesser] = BasicGuesser
 
     def solve(self, puzzle: Puzzle) -> bool:
-        threshold = 0.5
-        epoch = 0
-        while not puzzle.grid_filled() and epoch < 5:
+        threshold = 0.75    # on the first pass, only fill in those that we are quite confident in
+
+        while not puzzle.grid_filled() and threshold >= 0.05:
             stuck = True
             for ident in puzzle.get_identifiers():
                 current_slot = puzzle.read_slot(ident)
@@ -95,10 +96,11 @@ class BasicSolverThreshold(Solver):
 
                 clue = puzzle.get_clue(ident)
                 gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
-                # print(f"guesses for {ident}. {clue}: {gs}")
 
                 for g, conf in gs:
                     if compatible(current_slot, g) and conf >= threshold:
+                        clear_console()
+                        
                         print(f"\nWriting {g:^15} to slot {ident}\tconf: {conf:.0%}\t", end="")
                         if g == puzzle.get_answer(ident):
                             print("(CORRECT ✓)\n")
@@ -111,7 +113,6 @@ class BasicSolverThreshold(Solver):
                         # time.sleep(0.5)
                         break
             
-            epoch += 1
             threshold *= 0.5    # exponential decay
         
         return not stuck

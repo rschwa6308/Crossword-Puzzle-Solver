@@ -12,7 +12,7 @@ class Guesser:
         pass
     
     @lru_cache(maxsize=10**3)
-    def guess(self, clue: str, slot:str, max_guesses:int=5) -> List[Tuple[str, float]]:
+    def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
         """Get a list of guesses represented as `(guess, confidence)` pairs (sorted best to worst)"""
         pass
 
@@ -28,7 +28,7 @@ class BasicGuesser(Guesser):
         return 0.5 * math.e ** (-dist)
     
     @lru_cache(maxsize=10**3)
-    def guess(self, clue: str, slot:str, max_guesses:int=5) -> List[Tuple[str, float]]:
+    def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
         clue_vector = self.vectorizer.transform([clue])
 
         # if clue vector is all 0's, we have never seen any of the words in the clue before

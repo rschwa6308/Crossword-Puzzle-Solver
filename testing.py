@@ -45,3 +45,12 @@ res1 = test_solver(BasicSolver, 100)
 res2 = test_solver(BasicSolverThreshold, 100)
 pprint(res1)
 pprint(res2)
+
+"""
+{'average_fill_accuracy': 0.5136492346624022,
+ 'average_fill_percentage': 0.7937445334206289,
+ 'solver': <class 'solvers.BasicSolver'>}
+{'average_fill_accuracy': 0.6062841239766793,
+ 'average_fill_percentage': 0.7452190900625086,
+ 'solver': <class 'solvers.BasicSolverThreshold'>}
+"""

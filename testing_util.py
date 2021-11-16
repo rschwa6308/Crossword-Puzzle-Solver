@@ -48,6 +48,7 @@ def test_solver(solver_class: Type[Solver], num_puzzles):
         except Exception as e:
             print(f"An error occurred while building Puzzle object: {e}")
             print("Skipping")
+            continue
 
         solver.solve(puzzle)
 
@@ -64,6 +65,7 @@ def test_solver(solver_class: Type[Solver], num_puzzles):
 
     return {
         "solver": solver_class,
+        "num_puzzles": num_puzzles,
         "average_fill_percentage": sum(fill_percentages) / num_puzzles,
         "average_fill_accuracy": sum(fill_accuracies) / num_puzzles
     }

@@ -101,3 +101,12 @@ def pprint_grid_complex(grid):
             ) + "┤"
             print(line_sep)
     print("└─" + "─┴─"*(w-1) + "─┘")
+
+
+
+from IPython.display import clear_output
+
+
+def clear_console():
+    clear_output(wait=True)                             # jupyter notebook
+    os.system('cls' if os.name=='nt' else 'clear')      # windows or linux
