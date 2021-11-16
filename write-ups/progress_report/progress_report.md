@@ -4,7 +4,7 @@ Russell Schwartz, Chenqi Zhu, Henrique Corte, Ben Tompkins, Dan LASTNAME
 
 
 ## Project Overview
-As a reminder, the goal of our project is to build an automatic crossword puzzle solver, trained on a data set of 14500 New York Times crosswords dating back to 1976.
+As a reminder, the goal of our project is to build an automatic crossword puzzle solver, trained on a data set of ~14,500 New York Times crosswords dating back to 1976.
 
 The tentative name for the solver is **"Shortz Circuit"**.
 
@@ -42,7 +42,11 @@ Our progress so far includes
     ('SPA', 576)]
     ```
  - Does Zipf's Law Apply? Yup.
-   ![](zipfs_law.png) ![](zipfs_law_log.png)
+
+![](zipfs_law.png)
+
+![](zipfs_law_log.png)
+
  - What proportion of the answers are English n-grams?
    ```python
    def is_english_ngram(string, n):
