@@ -133,7 +133,62 @@ def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, flo
 
 Crossword puzzles love to repeat clue-answer pairs so this approach actually works pretty well. On our test set, the correct answer appeared in the top 5 best guesses ~60% of the time.
 
-We also tried using `Word2Vec` instead of TF-IDF, but this resulted in a drop in accuracy to ~45%. We are going to keep trying to make it work though.
+
+## Word2Vec Guesser Attempt
+Word2Vec is a useful tool in NLP which maps each word to a vector-based on its association with the documents. It is good at detecting the ‘similarity’ between different words as two similar words would result in two similar vectors in the n-dimensional vector space and vice versa. We initially believe this would be a good implementation of guesser as the clues are comprised of short sentences with fewer words than the quizzes we have learned throughout the semester. In theory, Word2Vec would be good at matching two similar clues together by calculating the closeness (cosine similarity) between 2 vectors.
+
+Gensim is a library containing a good implementation of Word2Vec trainer and various pre-trained models. We used modules from this library to train and test the Word2Vec guesser. As a clue has multiple words, we applied an average function `avg_feature_vector` on each clue to obtain the vector representation of each clue. The vectors could also be clustered using KNearestNeighbors method and the `guess` function utilizes this property to obtain the nearest n guesses fast. 
+
+The following code defines the W2VGuesser class(Initializer, training, some utility functions are omitted to make the report concise):
+
+```python
+class W2VGuesser:
+    # function average word2vec vector
+    def avg_feature_vector(words, model, num_features, ind2key_set):
+        feature_vec = np.zeros((num_features, ), dtype='float32')
+        n_words = 0
+        for word in words:
+            if word in ind2key_set:
+                n_words += 1
+                feature_vec = np.add(feature_vec, model[word])
+        if (n_words > 0):
+            feature_vec = np.divide(feature_vec, n_words)
+        return feature_vec
+
+    # define cosine similarity score
+    def sim_score(v1,v2):
+        return 1 - spatial.distance.cosine(v1, v2)
+
+    def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
+        clue = clue.replace('\'', '')
+        clue = clue.replace('"', '')
+        clue = clue.replace(':', '')
+        clue_vector =  self.word2vec_vectorizer([clue],self.model,self.dim,set(self.model.index_to_key))
+        distances, indices = self.nn_model.kneighbors(clue_vector,n_neighbors=max_guesses)
+        raw_guesses = [self.answers[i] for i in indices[0]]
+
+        def valid(g):
+            o = True
+            o &= len(g) == len(slot)
+            o &= g.lower() not in clue.lower()
+            return o
+    
+        # convert distances to confidences
+        guesses = [
+            (g, self.distance_to_confidence(d))
+            for g, d in zip(raw_guesses, distances[0]) if valid(g)
+        ]
+
+        # if a guess appears multiple times, interpret confidences as independent probabilities and combine
+        unique_guesses = set(g for g, _ in guesses)
+        guesses_combined = [
+            (g, 1 - math.prod(1-conf for g_, conf in guesses if g_==g))
+            for g in unique_guesses
+        ]
+
+        return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
+```
+The result of this attempt, however, was less than ideal. The Word2Vec implementation of guesser only achieved an accuracy of roughly 45% compared to what we had for 55% in the baseline guesser. It is possible that in the crossword puzzle, the same answer was asked in completely different way resulting in the vector being far from each other.
 
 
 ## Framework
