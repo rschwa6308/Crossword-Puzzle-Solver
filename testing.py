@@ -7,7 +7,7 @@ import time
 
 from puzzle import Puzzle
 from testing_util import get_puzzle_file_paths, test_solver
-from solvers import BasicSolver, BasicSolverThreshold
+from solvers import BasicSolver, BasicSolverThreshold, CellConfidenceSolver
 
 
 
@@ -41,10 +41,12 @@ from solvers import BasicSolver, BasicSolverThreshold
 # print(f"Fill accuracy:     {puzzle.grid_accuracy():.0%}")
 
 
-res1 = test_solver(BasicSolver, 100)
-res2 = test_solver(BasicSolverThreshold, 100)
-pprint(res1)
-pprint(res2)
+# res1 = test_solver(BasicSolver, 100)
+# res2 = test_solver(BasicSolverThreshold, 10)
+res3 = test_solver(CellConfidenceSolver, 1)
+# pprint(res1)
+# pprint(res2)
+pprint(res3)
 
 """
 {'average_fill_accuracy': 0.5136492346624022,

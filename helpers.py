@@ -110,3 +110,8 @@ from IPython.display import clear_output
 def clear_console():
     clear_output(wait=True)                             # jupyter notebook
     os.system('cls' if os.name=='nt' else 'clear')      # windows or linux
+
+
+def pprint_confidence_grid(grid):
+    for row in grid:
+        print(" ".join(f"{int(cell*100)}".zfill(2) if cell is not None else "██" for cell in row))
