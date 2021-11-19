@@ -19,6 +19,8 @@ class Guesser:
 
 
 class BasicGuesser(Guesser):
+    ngram_threshold = 0.25      # threshold at which to revert to raw n-gram searching
+
     def load(self):
         self.answers_train, self.vectorizer, self.model = pickle.load(open("trained_model.p", "rb"))
     
@@ -27,8 +29,7 @@ class BasicGuesser(Guesser):
         """map a clue embedding vector distance to a confidence value"""
         return 0.5 * math.e ** (-dist)
     
-    @lru_cache(maxsize=10**3)
-    def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
+    def tfidf_guess(self, clue, slot):
         clue_vector = self.vectorizer.transform([clue])
 
         # if clue vector is all 0's, we have never seen any of the words in the clue before
@@ -62,6 +63,18 @@ class BasicGuesser(Guesser):
         ]
 
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
+    
+    @lru_cache(maxsize=10**3)
+    def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
+        tfidf_guesses = self.tfidf_guess(clue, slot)
+        print(tfidf_guesses)
+        if len(tfidf_guesses) == 0 or max(conf for _, conf in tfidf_guesses) < self.ngram_threshold:
+            return [("?" * len(slot), self.ngram_threshold)]    # TESTING
+            # TODO: search for most likely n-gram that fits the slot
+        else:
+            return tfidf_guesses
+
+
 
 
 # Some testing...

@@ -1,7 +1,8 @@
 import os
 import random
 import json
-from typing import Type
+import time
+from typing import Callable, Type
 
 from puzzle import Puzzle
 from solvers import Solver
@@ -23,7 +24,7 @@ puzzle_paths = [puzz for puzz in get_puzzle_file_paths(DATA_PATH) if int(puzz[-7
 
 
 
-def test_solver(solver_class: Type[Solver], num_puzzles):
+def test_solver(solver_class: Type[Solver], num_puzzles, puzzle_filter:Callable[[Puzzle], bool]=lambda p: True, seed=None):
     """
     Run the given solver on the specified number of random puzzles.
 
@@ -34,21 +35,30 @@ def test_solver(solver_class: Type[Solver], num_puzzles):
     fill_percentages = []
     fill_accuracies = []
 
+    if seed:
+        random.seed(seed)
+
+    temp_pat = ["Monday", "Wednesday", "Sunday"]
+
     trials_complete = 0
     while trials_complete < num_puzzles:
         puzzle_path = os.path.join(DATA_PATH, random.choice(puzzle_paths))
 
-        print(f"Testing {solver_class} on {puzzle_path}\n")
-
-        with open(puzzle_path) as f:
-            puzzle_dict = json.load(f)
-
         try:
+            with open(puzzle_path) as f:
+                puzzle_dict = json.load(f)
             puzzle = Puzzle(puzzle_dict)
         except Exception as e:
-            print(f"An error occurred while building Puzzle object: {e}")
-            print("Skipping")
+            # print(f"An error occurred while building Puzzle object: {e}")
+            # print("Skipping")
             continue
+        
+        if not puzzle_filter(puzzle):
+            continue
+            
+        # TEMPORARY
+        if puzzle_dict["dow"] != temp_pat[trials_complete]:
+            continue 
 
         solver.solve(puzzle)
 
@@ -57,6 +67,9 @@ def test_solver(solver_class: Type[Solver], num_puzzles):
 
         print(f"Fill percentage:   {fill_per:.0%}")
         print(f"Fill accuracy:     {fill_acc:.0%}")
+        print()
+
+        # time.sleep(3)
 
         fill_percentages.append(fill_per)
         fill_accuracies.append(fill_acc)

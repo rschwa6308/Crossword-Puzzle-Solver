@@ -17,6 +17,28 @@ class Solver:
         Attempt to solve the given puzzle, returning whether we succeeded in filling the grid or not.
         Modifies the given puzzle in place.
         """
+    
+    def print_update_animation_frame(self, puzzle, guess, ident, confidence, clear=True):
+        if clear: clear_console()
+
+        print(f"Solver:   {type(self).__name__}")
+        print(f"Puzzle:   {puzzle.puzzle_dict['dow']}, {puzzle.puzzle_dict['date']}\n")
+
+        print(f"Writing {guess:^15} to slot {ident}", end="")
+        # print(f"Confidence: {confidence:^15.0%} ", end="")
+        # print(f"Writing {guess:^15} to slot {ident} with {confidence:.0%} confidence\t", end="")
+
+        if guess == puzzle.get_answer(ident):
+            print("\t(CORRECT ✓)")
+        else:
+            print("\t(INCORRECT ✗)")
+        
+        message = f"{confidence:.0%} " + "😕😐😀"[int(confidence*3)] + " "
+        print(f"        {message:^14}\n")
+        
+        pprint_grid(puzzle.grid, puzzle.get_acc_grid())
+        print()
+
 
 
 
@@ -56,17 +78,9 @@ class BasicSolver(Solver):
 
                 for g, conf in gs:
                     if compatible(current_slot, g):
-                        clear_console()
-
-                        print(f"\nWriting {g:^15} to slot {ident}\tconf: {conf:.0%}\t", end="")
-                        if g == puzzle.get_answer(ident):
-                            print("(CORRECT ✓)\n")
-                        else:
-                            print("(INCORRECT ✗)\n")
                         puzzle.write_slot(ident, g)
                         stuck = False
-                        pprint_grid(puzzle.grid, puzzle.get_acc_grid())
-                        # print("\n"*5)
+                        self.print_update_animation_frame(puzzle, g, ident, conf)
                         # time.sleep(0.5)
                         break
         
@@ -99,17 +113,9 @@ class BasicSolverThreshold(Solver):
 
                 for g, conf in gs:
                     if compatible(current_slot, g) and conf >= threshold:
-                        clear_console()
-                        
-                        print(f"\nWriting {g:^15} to slot {ident}\tconf: {conf:.0%}\t", end="")
-                        if g == puzzle.get_answer(ident):
-                            print("(CORRECT ✓)\n")
-                        else:
-                            print("(INCORRECT ✗)\n")
                         puzzle.write_slot(ident, g)
                         stuck = False
-                        pprint_grid(puzzle.grid, puzzle.get_acc_grid())
-                        # print("\n"*5)
+                        self.print_update_animation_frame(puzzle, g, ident, conf)
                         # time.sleep(0.5)
                         break
             
