@@ -1,5 +1,5 @@
 # CMSC 470 Final Project: Progress Report
-Russell Schwartz, Chenqi Zhu, Henrique Corte, Ben Tompkins, Dan LASTNAME
+Russell Schwartz, Chenqi Zhu, Henrique Corte, Ben Tompkins, Dan Song
 11/15/21
 
 
@@ -134,7 +134,7 @@ def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, flo
 Crossword puzzles love to repeat clue-answer pairs so this approach actually works pretty well. On our test set, the correct answer appeared in the top 5 best guesses ~60% of the time.
 
 
-## Word2Vec Guesser Attempt
+### Word2Vec Guesser Attempt
 Word2Vec is a useful tool in NLP which maps each word to a vector-based on its association with the documents. It is good at detecting the ‘similarity’ between different words as two similar words would result in two similar vectors in the n-dimensional vector space and vice versa. We initially believe this would be a good implementation of guesser as the clues are comprised of short sentences with fewer words than the quizzes we have learned throughout the semester. In theory, Word2Vec would be good at matching two similar clues together by calculating the closeness (cosine similarity) between 2 vectors.
 
 Gensim is a library containing a good implementation of Word2Vec trainer and various pre-trained models. We used modules from this library to train and test the Word2Vec guesser. As a clue has multiple words, we applied an average function `avg_feature_vector` on each clue to obtain the vector representation of each clue. The vectors could also be clustered using KNearestNeighbors method and the `guess` function utilizes this property to obtain the nearest n guesses fast. 
@@ -315,4 +315,4 @@ Here are some performance metrics for a test suite of 100 randomly chosen puzzle
 ## What's Next?
 
  - Improvements to the guesser: add n-gram search as an additional method of generating guesses
- - Proper solver implementations
+ - Proper solver implementations (assign confidence heuristic to each cell as we go, beam search, etc.)

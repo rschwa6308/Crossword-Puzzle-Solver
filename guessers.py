@@ -67,7 +67,6 @@ class BasicGuesser(Guesser):
     @lru_cache(maxsize=10**3)
     def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
         tfidf_guesses = self.tfidf_guess(clue, slot)
-        print(tfidf_guesses)
         if len(tfidf_guesses) == 0 or max(conf for _, conf in tfidf_guesses) < self.ngram_threshold:
             return [("?" * len(slot), self.ngram_threshold)]    # TESTING
             # TODO: search for most likely n-gram that fits the slot

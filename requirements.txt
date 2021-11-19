@@ -1,2 +1,3 @@
 sklearn
-allennlp
+# allennlp
+termcolor
