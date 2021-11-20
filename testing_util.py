@@ -38,7 +38,7 @@ def test_solver(solver_class: Type[Solver], num_puzzles, puzzle_filter:Callable[
     if seed:
         random.seed(seed)
 
-    temp_pat = ["Monday", "Wednesday", "Sunday"]
+    # temp_pat = ["Monday", "Wednesday", "Sunday"]
 
     trials_complete = 0
     while trials_complete < num_puzzles:
@@ -56,9 +56,9 @@ def test_solver(solver_class: Type[Solver], num_puzzles, puzzle_filter:Callable[
         if not puzzle_filter(puzzle):
             continue
             
-        # TEMPORARY
-        if puzzle_dict["dow"] != temp_pat[trials_complete]:
-            continue 
+        # # TEMPORARY
+        # if puzzle_dict["dow"] != temp_pat[trials_complete]:
+        #     continue 
 
         solver.solve(puzzle)
 

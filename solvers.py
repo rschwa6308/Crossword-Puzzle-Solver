@@ -6,6 +6,10 @@ from pprint import pprint
 
 
 
+EPSILON = 1e-6      # machine epsilon for fuzzy floating-point comparisons
+
+
+
 class Solver:
     guesser_class: Type[Guesser] = None
 
@@ -42,15 +46,29 @@ class Solver:
 
 
 
+def compatibility_score(a, b):
+    if len(a) != len(b): return 0.0
+
+    matches = 0
+    for a_char, b_char in zip(a, b):
+        if a_char == " " or b_char == " ":
+            matches += 1
+        if a_char == b_char:
+            matches += 1
+    
+    return matches / len(a)
+
 
 def compatible(a, b):
-    if len(a) != len(b): return False
+    return compatibility_score(a, b) == 1.0
+    # if len(a) != len(b): return False
 
-    for a_char, b_char in zip(a, b):
-        if a_char == " " or b_char == " ": continue
-        if a_char != b_char: return False
+    # for a_char, b_char in zip(a, b):
+    #     if a_char == " " or b_char == " ":
+    #         continue
+    #     if a_char != b_char: return False
 
-    return True
+    # return True
 
 
 
@@ -99,9 +117,9 @@ class BasicSolverThreshold(Solver):
     guesser_class: Type[Guesser] = BasicGuesser
 
     def solve(self, puzzle: Puzzle):
-        threshold = 0.75    # on the first pass, only fill in those that we are quite confident in
+        conf_threshold = 0.75       # on the first pass, only fill in those that we are quite confident in
 
-        while not puzzle.grid_filled() and threshold >= 0.05:
+        while not puzzle.grid_filled() and conf_threshold >= 0.05:
             for ident in puzzle.get_identifiers():
                 current_slot = puzzle.read_slot(ident)
                 if " " not in current_slot: continue
@@ -110,15 +128,22 @@ class BasicSolverThreshold(Solver):
                 gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
 
                 for g, conf in gs:
-                    if compatible(current_slot, g) and conf >= threshold:
+                    if compatible(current_slot, g) and conf >= conf_threshold:
                         puzzle.write_slot(ident, g)
                         stuck = False
                         self.print_update_animation_frame(puzzle, g, ident, conf)
                         # time.sleep(0.5)
                         break
             
-            threshold *= 0.5    # exponential decay
+            conf_threshold *= 0.5   # exponential decay
         
+
+
+def average(nums):
+    nums = list(nums)
+    if len(nums) == 0: return 0
+    return sum(nums) / len(nums)
+
 
 
 class CellConfidenceSolver(Solver):
@@ -139,30 +164,47 @@ class CellConfidenceSolver(Solver):
             for row in puzzle.grid
         ]
 
-        while not puzzle.grid_filled():
+        conf_threshold = 0.75
+
+        converged = False
+        while not converged:
+            converged = True
             for ident in puzzle.get_identifiers():
                 current_slot = puzzle.read_slot(ident)
                 slot_coords = puzzle.cells_map[ident]
+                slot_confidence_avg = average(confidence_grid[y][x] for x, y in slot_coords)
                 # if " " not in current_slot: continue
 
                 clue = puzzle.get_clue(ident)
                 gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
 
                 for g, conf in gs:
-                    # TODO: overwriting logic here
-                    if compatible(current_slot, g):
-                        clear_console()
-                        print(f"\nWriting {g:^15} to slot {ident}\tconf: {conf:.0%}\t", end="")
-                        print("(CORRECT ✓)\n" if g == puzzle.get_answer(ident) else "(INCORRECT ✗)\n")
+                    slot_confidence_avg_changed = average(
+                        confidence_grid[y][x]
+                        for (x, y), old, new in zip(slot_coords, current_slot, g)
+                        if old != new
+                    )
+                    # overwrite the current slot if several conditions are met
+                    if all([
+                        g != current_slot,
+                        # compatibility_score(g, current_slot) > 0.25,
+                        conf > conf_threshold,
+                        conf > slot_confidence_avg_changed + EPSILON,
+                    ]):
                         puzzle.write_slot(ident, g)
                         # transfer guess confidence to cell confidence, optionally "normalizing" by slot length
                         for x, y in slot_coords:
                             # confidence_grid[y][x] = conf / len(slot_coords) ** 0.5
                             confidence_grid[y][x] = conf
+                        
+                        converged = False
 
-                        pprint_grid(puzzle.grid, puzzle.get_acc_grid())
+                        # print("old:", slot_confidence_avg, "new: ", conf)
+                        self.print_update_animation_frame(puzzle, g, ident, conf)
                         pprint_confidence_grid(confidence_grid)
                         break
+            
+            conf_threshold *= 0.5   # exponential decay
 
 
 

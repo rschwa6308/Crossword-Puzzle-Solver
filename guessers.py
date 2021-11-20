@@ -19,7 +19,7 @@ class Guesser:
 
 
 class BasicGuesser(Guesser):
-    ngram_threshold = 0.25      # threshold at which to revert to raw n-gram searching
+    ngram_threshold = 0.15      # threshold at which to revert to raw n-gram searching
 
     def load(self):
         self.answers_train, self.vectorizer, self.model = pickle.load(open("trained_model.p", "rb"))
@@ -68,7 +68,7 @@ class BasicGuesser(Guesser):
     def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
         tfidf_guesses = self.tfidf_guess(clue, slot)
         if len(tfidf_guesses) == 0 or max(conf for _, conf in tfidf_guesses) < self.ngram_threshold:
-            return [("?" * len(slot), self.ngram_threshold)]    # TESTING
+            return [("?" * len(slot), 0.05)]    # TESTING
             # TODO: search for most likely n-gram that fits the slot
         else:
             return tfidf_guesses

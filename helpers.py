@@ -113,5 +113,14 @@ def clear_console():
 
 
 def pprint_confidence_grid(grid):
+    color_scale = ["red", "yellow", "green"]
+    def get_chars(conf):
+        text = f"{int(conf*100)}".zfill(2)
+        if conf == 0.0:
+            return text
+        else:
+            color = color_scale[int(conf * len(color_scale))]
+            return termcolor.colored(text, color)
+
     for row in grid:
-        print(" ".join(f"{int(cell*100)}".zfill(2) if cell is not None else "██" for cell in row))
+        print(" ".join(get_chars(cell) if cell is not None else "██" for cell in row))
