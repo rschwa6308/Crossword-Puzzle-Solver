@@ -1,5 +1,5 @@
 from typing import Type
-from guessers import BasicGuesser, Guesser
+from guessers import BasicGuesser, Guesser, HybridGuesser
 from puzzle import Puzzle
 from helpers import pprint_confidence_grid, pprint_grid, clear_console
 from pprint import pprint
@@ -112,9 +112,11 @@ class BasicSolverThreshold(Solver):
     Only fill in a slot if the guess confidence is above a threshold, which decreases over with time.
 
     Run until threshold hits a minimum degeneracy point (say, 5% confidence)
+
+    Uses the `HybridGuesser`
     """
 
-    guesser_class: Type[Guesser] = BasicGuesser
+    guesser_class: Type[Guesser] = HybridGuesser
 
     def solve(self, puzzle: Puzzle):
         conf_threshold = 0.75       # on the first pass, only fill in those that we are quite confident in
@@ -155,7 +157,7 @@ class CellConfidenceSolver(Solver):
 
     WIP
     """
-    guesser_class: Type[Guesser] = BasicGuesser
+    guesser_class: Type[Guesser] = HybridGuesser
 
     def solve(self, puzzle: Puzzle):
         # TODO: initialize confidence grid
