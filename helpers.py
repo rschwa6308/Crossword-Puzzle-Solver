@@ -2,6 +2,10 @@ import os
 import termcolor
 
 
+EPSILON = 1e-6      # machine epsilon for fuzzy floating-point comparisons
+
+
+
 def build_grid(puzzle):
     w = puzzle["size"]["cols"]
     h = puzzle["size"]["rows"]
@@ -114,12 +118,13 @@ def clear_console():
 
 def pprint_confidence_grid(grid):
     color_scale = ["red", "yellow", "green"]
+
     def get_chars(conf):
-        text = f"{int(conf*100)}".zfill(2)
+        text = f"{int(conf*(1 - EPSILON)*100)}".zfill(2)
         if conf == 0.0:
             return text
         else:
-            color = color_scale[int(conf * len(color_scale))]
+            color = color_scale[int(conf * (1 - EPSILON) * len(color_scale))]
             return termcolor.colored(text, color)
 
     for row in grid:

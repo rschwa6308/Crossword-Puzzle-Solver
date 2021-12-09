@@ -70,7 +70,7 @@ def test_solver(solver_class: Type[Solver], num_puzzles, puzzle_filter:Callable[
         print(f"Fill accuracy:     {fill_acc:.0%}")
         print()
 
-        # time.sleep(3)
+        time.sleep(1)
 
         fill_percentages.append(fill_per)
         fill_accuracies.append(fill_acc)
@@ -83,6 +83,11 @@ def test_solver(solver_class: Type[Solver], num_puzzles, puzzle_filter:Callable[
         "num_puzzles": num_puzzles,
         "average_fill_percentage": sum(fill_percentages) / num_puzzles,
         "average_fill_accuracy": sum(fill_accuracies) / num_puzzles,
-        "average_score": sum(scores) / num_puzzles
+        "average_score": sum(scores) / num_puzzles,
+        "raw": {
+            "fill_percentages": fill_percentages,
+            "fill_accuracies": fill_accuracies,
+            "scores": scores,
+        }
     }
 

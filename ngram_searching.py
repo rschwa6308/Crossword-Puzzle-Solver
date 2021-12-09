@@ -4,7 +4,7 @@ from nltk.corpus import words
 import re
 
 
-# nltk.download('words')
+nltk.download('words')
 ENGLISH_WORDS = set(w.upper() for w in words.words())
 
 ENGLISH_WORDS_STRING = "\n".join(ENGLISH_WORDS)
@@ -13,11 +13,12 @@ def word_search(slot: str, single=False) -> List[str]:
     pattern = "".join("." if c == " " else c.upper() for c in slot)
     # print(pattern)
     if single:
-        if m := re.search(
+        m = re.search(
             f"^({pattern})$",
             ENGLISH_WORDS_STRING,
             re.MULTILINE
-        ):
+        )
+        if m:
             return [m.group(0)]
         else:
             return []
@@ -32,7 +33,8 @@ def word_search(slot: str, single=False) -> List[str]:
 
 def ngram_search(n: int, slot: str, single=False) -> List[Tuple[str, ...]]:
     if n == 1:
-        if words := word_search(slot):
+        words = word_search(slot)
+        if words:
             return [(w,) for w in words]
         else:
             return []

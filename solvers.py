@@ -1,12 +1,9 @@
 from typing import Type
 from guessers import BasicGuesser, Guesser, HybridGuesser
 from puzzle import Puzzle
-from helpers import pprint_confidence_grid, pprint_grid, clear_console
+from helpers import pprint_confidence_grid, pprint_grid, clear_console, EPSILON
 from pprint import pprint
 
-
-
-EPSILON = 1e-6      # machine epsilon for fuzzy floating-point comparisons
 
 
 
@@ -159,14 +156,18 @@ class CellConfidenceSolver(Solver):
     """
     guesser_class: Type[Guesser] = HybridGuesser
 
+    def print_update_animation_frame(self, puzzle, guess, ident, confidence, clear=True):
+        super().print_update_animation_frame(puzzle, guess, ident, confidence, clear)
+        pprint_confidence_grid(self.confidence_grid)
+
     def solve(self, puzzle: Puzzle):
         # TODO: initialize confidence grid
-        confidence_grid = [
+        self.confidence_grid = [
             [None if cell == "." else 0.0 for cell in row]
             for row in puzzle.grid
         ]
 
-        conf_threshold = 0.75
+        conf_threshold = 0.90
 
         converged = False
         while not converged:
@@ -174,7 +175,7 @@ class CellConfidenceSolver(Solver):
             for ident in puzzle.get_identifiers():
                 current_slot = puzzle.read_slot(ident)
                 slot_coords = puzzle.cells_map[ident]
-                slot_confidence_avg = average(confidence_grid[y][x] for x, y in slot_coords)
+                slot_confidence_avg = average(self.confidence_grid[y][x] for x, y in slot_coords)
                 # if " " not in current_slot: continue
 
                 clue = puzzle.get_clue(ident)
@@ -182,7 +183,7 @@ class CellConfidenceSolver(Solver):
 
                 for g, conf in gs:
                     slot_confidence_avg_changed = average(
-                        confidence_grid[y][x]
+                        self.confidence_grid[y][x]
                         for (x, y), old, new in zip(slot_coords, current_slot, g)
                         if old != new
                     )
@@ -193,17 +194,21 @@ class CellConfidenceSolver(Solver):
                         conf > conf_threshold,
                         conf > slot_confidence_avg_changed + EPSILON,
                     ]):
+                        # transfer guess confidence to cell confidence
+                        for (x, y), old, new in zip(slot_coords, current_slot, g):
+                            if old != new:
+                                self.confidence_grid[y][x] = conf                               # cell changed
+                            else:
+                                old_conf = self.confidence_grid[y][x]
+                                self.confidence_grid[y][x] = 1 - (1 - old_conf)*(1 - conf)      # cell corroborated
+                        
+                        # overwrite contents of slot with the new guess
                         puzzle.write_slot(ident, g)
-                        # transfer guess confidence to cell confidence, optionally "normalizing" by slot length
-                        for x, y in slot_coords:
-                            # confidence_grid[y][x] = conf / len(slot_coords) ** 0.5
-                            confidence_grid[y][x] = conf
                         
                         converged = False
 
                         # print("old:", slot_confidence_avg, "new: ", conf)
                         self.print_update_animation_frame(puzzle, g, ident, conf)
-                        pprint_confidence_grid(confidence_grid)
                         break
             
             conf_threshold *= 0.5   # exponential decay

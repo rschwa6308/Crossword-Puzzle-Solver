@@ -4,9 +4,18 @@ import math
 import numpy as np
 import random
 from functools import lru_cache
+# from helpers import EPSILON
+
+EPSILON = 1e-6      # machine epsilon for fuzzy floating-point comparisons
 
 from ngram_searching import ngram_search
 
+
+
+def product(nums):
+    p = 1
+    for n in nums: p *= n
+    return p
 
 
 class Guesser:
@@ -31,7 +40,7 @@ class BasicGuesser(Guesser):
         return 0.5 * math.e ** (-dist)
     
     @lru_cache(maxsize=10**3)
-    def guess(self, clue, slot, max_guesses):
+    def tfidf_guess(self, clue, slot_length):
         clue_vector = self.vectorizer.transform([clue])
 
         # if clue vector is all 0's, we have never seen any of the words in the clue before
@@ -46,8 +55,8 @@ class BasicGuesser(Guesser):
 
         def valid(g):
             o = True
-            if len(slot):
-                o &= len(g) == len(slot)
+            if slot_length:
+                o &= len(g) == slot_length
             o &= g.lower() not in clue.lower()
             return o
         
@@ -60,16 +69,19 @@ class BasicGuesser(Guesser):
         # if a guess appears multiple times, interpret confidences as independent probabilities and combine
         unique_guesses = set(g for g, _ in guesses)
         guesses_combined = [
-            (g, 1 - math.prod(1-conf for g_, conf in guesses if g_==g))
+            (g, 1 - product(1-conf for g_, conf in guesses if g_==g))
             for g in unique_guesses
         ]
 
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
+    
+    def guess(self, clue, slot, max_guesses):
+        return self.tfidf_guess(clue, len(slot))
 
 
 
 class HybridGuesser(Guesser):
-    ngram_threshold = 0.10      # threshold at which to revert to raw n-gram searching
+    ngram_threshold = 0.05      # threshold at which to revert to raw n-gram searching
 
     def load(self):
         self.answers_train, self.vectorizer, self.model = pickle.load(open("trained_model.p", "rb"))
@@ -80,7 +92,7 @@ class HybridGuesser(Guesser):
         return 0.5 * math.e ** (-dist)
     
     @lru_cache(maxsize=10**3)
-    def tfidf_guess(self, clue, slot):
+    def tfidf_guess(self, clue, slot_length):
         clue_vector = self.vectorizer.transform([clue])
 
         # if clue vector is all 0's, we have never seen any of the words in the clue before
@@ -95,8 +107,8 @@ class HybridGuesser(Guesser):
 
         def valid(g):
             o = True
-            if len(slot):
-                o &= len(g) == len(slot)
+            if slot_length:
+                o &= len(g) == slot_length
             o &= g.lower() not in clue.lower()
             return o
         
@@ -109,15 +121,14 @@ class HybridGuesser(Guesser):
         # if a guess appears multiple times, interpret confidences as independent probabilities and combine
         unique_guesses = set(g for g, _ in guesses)
         guesses_combined = [
-            (g, 1 - math.prod(1-conf for g_, conf in guesses if g_==g))
+            (g, 1 - product(1-conf for g_, conf in guesses if g_==g))
             for g in unique_guesses
         ]
 
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
     
-    @lru_cache(maxsize=10**3)
     def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, float]]:
-        tfidf_guesses = self.tfidf_guess(clue, slot)
+        tfidf_guesses = self.tfidf_guess(clue, len(slot))
         if len(tfidf_guesses) == 0 or max(conf for _, conf in tfidf_guesses) < self.ngram_threshold:
             # search for n-grams that fit the slot
             # for now, just find a single match (chosen arbitrarily)
@@ -126,7 +137,7 @@ class HybridGuesser(Guesser):
             ngram = random.choice(ngrams)
             guess = "".join(ngram)
             print("ngram guess:", guess)
-            return [(guess, 0.05)]  # arbitrary (low) confidence score
+            return [(guess, self.ngram_threshold + EPSILON)]  # arbitrary (low) confidence score
         else:
             return tfidf_guesses
 
