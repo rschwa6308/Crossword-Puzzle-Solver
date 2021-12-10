@@ -1,4 +1,6 @@
 from typing import List, Tuple
+import wikipedia
+
 from guessers import BasicGuesser
 
 
@@ -8,7 +10,15 @@ class QuizBowlModel:
     def __init__(self):
         self.guesser = BasicGuesser()
         self.guesser.load()
-    
+
+    def convert_to_QA_answer(self, guess):
+        try:
+            page_title = wikipedia.search(guess, results=1)[0]
+        except Exception:
+            page_title = guess.title()
+
+        return page_title.replace(" ", "_")
+
     def guess_and_buzz(self, question_text: List[str]) -> List[Tuple[str, bool]]:
         """
         Use the crossword guesser to generate general QA guesses.
@@ -20,14 +30,17 @@ class QuizBowlModel:
 
         for question in question_text:
             best_guess = ("???", -1.0)
-            for slot_length in range(5, 15):
+            for slot_length in range(4, 15):
                 guesses = self.guesser.guess(question, slot=" "*slot_length, max_guesses=1)
                 if guesses:
                     guess = guesses[0]
                     if guess[1] > best_guess[1]:
                         best_guess = guess
             
-            guess_buzzes.append((best_guess[0].lower(), best_guess[1] > self.THRESHOLD))
+            guess_buzzes.append((
+                self.convert_to_QA_answer(best_guess[0]),
+                best_guess[1] > self.THRESHOLD
+            ))
         
         return guess_buzzes
 
@@ -37,5 +50,5 @@ class QuizBowlModel:
 #     m = QuizBowlModel()
 #     print(m.guess_and_buzz([
 #         "first man on the moon",
-#         "bruins school"
+#         "adam and eve garden"
 #     ]))
