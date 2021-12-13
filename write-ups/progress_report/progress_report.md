@@ -134,7 +134,8 @@ def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, flo
 Crossword puzzles love to repeat clue-answer pairs so this approach actually works pretty well. On our test set, the correct answer appeared in the top 5 best guesses ~60% of the time.
 
 
-### Word2Vec Guesser Attempt
+## Word2Vec Guesser Attempt
+# Motivation
 Word2Vec is a useful tool in NLP which maps each word to a vector-based on its association with the documents. It is good at detecting the ‘similarity’ between different words as two similar words would result in two similar vectors in the n-dimensional vector space and vice versa. We initially believe this would be a good implementation of guesser as the clues are comprised of short sentences with fewer words than the quizzes we have learned throughout the semester. In theory, Word2Vec would be good at matching two similar clues together by calculating the closeness (cosine similarity) between 2 vectors.
 
 Gensim is a library containing a good implementation of Word2Vec trainer and various pre-trained models. We used modules from this library to train and test the Word2Vec guesser. As a clue has multiple words, we applied an average function `avg_feature_vector` on each clue to obtain the vector representation of each clue. The vectors could also be clustered using KNearestNeighbors method and the `guess` function utilizes this property to obtain the nearest n guesses fast. 
@@ -188,6 +189,16 @@ class W2VGuesser:
 
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
 ```
+# Visualization
+As word vectors lives in n-dimensional vector space, it is possible to project each vector onto 2-dimensional plane to observe the closeness between different vectorized clues. To project a vector of higher dimension to a lower dimension space, one common method is Principal Component Analysis (PCA). PCA employs Singular Value Decomposition (SVD) to extract the m-dimensional data from n-dimensional data(n$\geq$m) by preserving data corresponding to m-largest singular values.
+
+![](w2v_pca.png)
+In this example where the testing clue was ‘radiator output’, the Word2Vec guesser successfully distinguished the training data that matched to the clue (labeled red) with other confusing puzzles(blue) that also include the word ‘output’. We can see under the PCA the correct clue vector is not aligned with the incorrect ones on the x-axis.
+
+![](w2v_pca2.png)
+While the Word2Vec guesser may be effective at distinguishing the wrong ones, in some other cases it was not able to find the correct one. This example above illustrates that despite the guesser separating ‘African language group’ from other culture-language related confusing clues it did not find any correct vector close to the testing clue.
+
+#
 The result of this attempt, however, was less than ideal. The Word2Vec implementation of guesser only achieved an accuracy of roughly 45% compared to what we had for 55% in the baseline guesser. It is possible that in the crossword puzzle, the same answer was asked in completely different way resulting in the vector being far from each other.
 
 
