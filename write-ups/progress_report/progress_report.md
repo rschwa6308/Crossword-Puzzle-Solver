@@ -193,9 +193,11 @@ class W2VGuesser:
 As word vectors lives in n-dimensional vector space, it is possible to project each vector onto 2-dimensional plane to observe the closeness between different vectorized clues. To project a vector of higher dimension to a lower dimension space, one common method is Principal Component Analysis (PCA). PCA employs Singular Value Decomposition (SVD) to extract the m-dimensional data from n-dimensional data(n$\geq$m) by preserving data corresponding to m-largest singular values.
 
 ![](w2v_pca.png)
+
 In this example where the testing clue was ‘radiator output’, the Word2Vec guesser successfully distinguished the training data that matched to the clue (labeled red) with other confusing puzzles(blue) that also include the word ‘output’. We can see under the PCA the correct clue vector is not aligned with the incorrect ones on the x-axis.
 
 ![](w2v_pca2.png)
+
 While the Word2Vec guesser may be effective at distinguishing the wrong ones, in some other cases it was not able to find the correct one. This example above illustrates that despite the guesser separating ‘African language group’ from other culture-language related confusing clues it did not find any correct vector close to the testing clue.
 
 #
