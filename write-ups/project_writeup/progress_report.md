@@ -373,39 +373,6 @@ Performance metrics:
 ```
 
 
-## Gradescope Error Analysis
-Regarding our Gradescope submission, the accuracy came up as zero. It would be a reasonable expectation that there would be some transferability for a tf-idf guesser trained on crossword data to deliver very small but nonzero accuracy on quiz bowl data. This expectation is based on the assumption there should be some intersection between Quiz Bowl question-answers and Crossword clue-answers. This isn't the case because the Quiz Bowl and Crossword data is structured very differently. 
-
-In terms the dissimilarity of questions between the two datasets, Quiz Bowl questions are long and detailed full paragraphs and sentences, and the logic connecting Quiz bowl questions to answers is straightforward. Clues are one to four word phrases that are meant to be cryptic (otherwise, solving crossword puzzles would be too easy) and require subtle logic or logic very specific to crossword puzzles to connect the answers to the clues. Also, crossword questions often have fill-in-the-blank lines that aren't present in quiz bowl questions.
-
-Regarding the answers of both datasets, the Quiz Bowl answers are usually derivable from one or more Wikipedia pages, but crossword answers are usually pulled from marginal types of knowledge that Wikipedia likely wouldn't consider but would need to be found with a thorough Google search or are exclusively found in crossword clue-answer archives.
-
-In terms of answer format, Quiz Bowl answers are well-spaced and coherent. Crossword answers are concatenated into one word, so in their default form, they are not present in Wikipedia for concatenated multi-word answers. One could use a parser to parse concatenated words into separate words, but there might different viable ways to parse concatenated words into valid English words, so there is information lost in the concatenation.
-
-Our tf-idf guesser is robust to clue-answer data, but this doesn't transfer to Quiz Bowl data due to the differences in the datasets. This is evident from the fact that we received a non-zero accuracy (50-70%) in running our tf-idf guesser on crossword data that is presented in our uploaded video. If our tf-idf guesser trained on crossword data was inherently flawed, it would produce zero accuracy on both Quiz Bowl and Crossword data. Outputs from `guessing_output.ipynb` for our tf-idf guesses on crossword clue-answers is shown in `outputs/guessing.ipynb.output`. This shows that our tf-idf guesser is working well for crossword test data.
-
-The non-trivial differences between the Quiz Bowl question-answer data and the crossword clue-answer data causes high dissimilarity between question-answer vectors and the clue-answer vectors. This high dissimilarity significantly affects the transferability of a crossword-trained tf-idf guesser to Quiz Bowl data. 
-
-Below are some examples of clue-answers-guesses that would have ambiguous correspondence to Quiz Bowl questions-answers and to Wikipedia articles.
-```
-clue: Gaze dreamily
-answer: MOON
-guesses: [('MOON', 0.0), ('MOON', 0.0), ('PEER', 0.8281459341378639), ('MUSE', 0.9316012626317816), ('SLIM', 1.0)]
-----------------------------------------------
-clue: Uses again, as Tupperware
-answer: RESEALS
-guesses: [('ALLOVER', 1.0), ('NOTONCE', 1.0)]
-----------------------------------------------
-clue: Stigma
-answer: ODIUM
-guesses: [('BRAND', 0.0), ('STAIN', 0.0), ('BRAND', 0.0), ('STAIN', 0.0), ('BRAND', 0.0)]
-```
-
-## Error Analysis
-
-## Who Did What
-* Daniel Song - helped with presentation slides, gradescope error analysis and training a pre-trained Word2Vec model on crossword data.
-
 ## What's Next?
 - Improvements to the guesser
     - a neural encoder model
