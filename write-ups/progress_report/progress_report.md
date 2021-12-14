@@ -386,7 +386,7 @@ Our tf-idf guesser is robust to clue-answer data, but this doesn't transfer to Q
 
 The non-trivial differences between the Quiz Bowl question-answer data and the crossword clue-answer data causes high dissimilarity between question-answer vectors and the clue-answer vectors. This high dissimilarity significantly affects the transferability of a crossword-trained tf-idf guesser to Quiz Bowl data. 
 
-Below are some examples of clue-answers-guesses that would have ambiguous correspondence Quiz Bowl questions-answers and to Wikipedia.
+Below are some examples of clue-answers-guesses that would have ambiguous correspondence to Quiz Bowl questions-answers and to Wikipedia articles.
 ```
 clue: Gaze dreamily
 answer: MOON
