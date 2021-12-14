@@ -373,7 +373,7 @@ Performance metrics:
 ```
 
 
-## Error Analysis
+## Gradescope Error Analysis
 Regarding our Gradescope submission, the accuracy came up as zero. It would be a reasonable expectation that there would be some transferability for a tf-idf guesser trained on crossword data to deliver very small but nonzero accuracy on quiz bowl data. This expectation is based on the assumption there should be some intersection between Quiz Bowl question-answers and Crossword clue-answers. This isn't the case because the Quiz Bowl and Crossword data is structured very differently. 
 
 In terms the dissimilarity of questions between the two datasets, Quiz Bowl questions are long and detailed full paragraphs and sentences, and the logic connecting Quiz bowl questions to answers is straightforward. Clues are one to four word phrases that are meant to be cryptic (otherwise, solving crossword puzzles would be too easy) and require subtle logic or logic very specific to crossword puzzles to connect the answers to the clues. Also, crossword questions often have fill-in-the-blank lines that aren't present in quiz bowl questions.
@@ -400,6 +400,11 @@ clue: Stigma
 answer: ODIUM
 guesses: [('BRAND', 0.0), ('STAIN', 0.0), ('BRAND', 0.0), ('STAIN', 0.0), ('BRAND', 0.0)]
 ```
+
+## Error Analysis
+
+## Who Did What
+* Daniel Song - helped with presentation slides, gradescope error analysis and training a pre-trained Word2Vec model on crossword data.
 
 ## What's Next?
 - Improvements to the guesser
