@@ -133,6 +133,8 @@ def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, flo
 
 Crossword puzzles love to repeat clue-answer pairs so this approach actually works pretty well. On our test set, the correct answer appeared in the top 5 best guesses ~60% of the time.
 
+If TFIDF does not return any guesses above a meager confidence threshold, then the guesser resorts to n-gram searching, where it simply tries to find any sequence of english words that fit the slot.
+
 
 ## Word2Vec Guesser Attempt
 # Motivation
@@ -205,7 +207,7 @@ The result of this attempt, however, was less than ideal. The Word2Vec implement
 
 
 ## Framework
-The `Puzzle` makes it really easy to interact with a crossword puzzle, which is nontrivial since the slot-identifier scheme is idiosyncratic. There are also lots of helper functions for visualizing a puzzle in the terminal while it is being solved. 
+The `Puzzle` class makes it really easy to interact with a crossword puzzle, which is nontrivial since the slot-identifier scheme is idiosyncratic. There are also lots of helper functions for visualizing a puzzle in the terminal while it is being solved. 
 
 ```
 ＰＡＴＴＩ██ＲＩＦＦ██ＡＳＥＡ
@@ -238,41 +240,8 @@ def guess(self, clue: str, slot: str, max_guesses: int=5) -> List[Tuple[str, flo
 
 
 ## Solution Attempts
-A completely naive solution:
-```Python
-class BasicSolver(Solver):
-    """
-    The most obvious possible strategy:
+A relatively naive solution:
 
-    Iterate over the slots in order, writing (in ink) our best guess that is compatible with the current contents of the slot
-    Repeat until either grid is filled or we get stuck
-
-    Uses the `BasicGuesser`
-    """
-
-    guesser_class: Type[Guesser] = BasicGuesser
-
-    def solve(self, puzzle: Puzzle) -> bool:
-        stuck = False
-        while not puzzle.grid_filled() and not stuck:
-            stuck = True
-            for ident in puzzle.get_identifiers():
-                current_slot = puzzle.read_slot(ident)
-                if " " not in current_slot: continue
-
-                clue = puzzle.get_clue(ident)
-                gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
-
-                for g, conf in gs:
-                    if compatible(current_slot, g):
-                        puzzle.write_slot(ident, g)
-                        stuck = False
-                        break
-        
-        return not stuck
-```
-
-A slightly less naive solution:
 ```python
 class BasicSolverThreshold(Solver):
     """
@@ -308,13 +277,10 @@ class BasicSolverThreshold(Solver):
         return not stuck
 ```
 
-Both of these have the highly restrictive property that they solve the puzzle "in ink" so to speak, meaning that once a slot is written to it is never changed. Despite being really dumb, they actually work alright. I would even wager that `BasicSolverThreshold` does better on some Thursdays than I do!
+This algorithm has the highly restrictive property that they solve the puzzle "in ink" so to speak, meaning that once a slot is written to it is never changed. Despite being really dumb, they actually work alright.
 
-Here are some performance metrics for a test suite of 100 randomly chosen puzzles (care was taken to separate train and test sets).
+Here are some performance metrics for a test suite of 100 randomly chosen test puzzles.
 ```
-{'average_fill_accuracy': 0.513,
- 'average_fill_percentage': 0.793,
- 'solver': <class 'solvers.BasicSolver'>}
 {'average_fill_accuracy': 0.606,
  'average_fill_percentage': 0.745,
  'solver': <class 'solvers.BasicSolverThreshold'>}
@@ -325,7 +291,95 @@ Here are some performance metrics for a test suite of 100 randomly chosen puzzle
 `average_fill_percentage` represents the percentage of the grid that was filled at all (at present, these solvers leave a slot blank if they have never seen any of the words in the clue before)
 
 
-## What's Next?
+A smarter solution:
 
- - Improvements to the guesser: add n-gram search as an additional method of generating guesses
- - Proper solver implementations (assign confidence heuristic to each cell as we go, beam search, etc.)
+```python
+
+class CellConfidenceSolver(Solver):
+    """
+    A first attempt at solving "in pencil".
+    
+    Each filled cell has associated confidence score (derived from guess confidence).
+    Low confidence cells can be overwritten by subsequent guesses.
+    """
+
+    guesser_class: Type[Guesser] = HybridGuesser
+
+    def solve(self, puzzle: Puzzle):
+        self.confidence_grid = [
+            [None if cell == "." else 0.0 for cell in row]
+            for row in puzzle.grid
+        ]
+
+        conf_threshold = 0.90
+
+        converged = False
+        while not converged:
+            converged = True
+            for ident in puzzle.get_identifiers():
+                current_slot = puzzle.read_slot(ident)
+                slot_coords = puzzle.cells_map[ident]
+                slot_confidence_avg = average(self.confidence_grid[y][x] for x, y in slot_coords)
+
+                clue = puzzle.get_clue(ident)
+                gs = self.guesser.guess(clue, puzzle.read_slot(ident), max_guesses=5)
+
+                for g, conf in gs:
+                    slot_confidence_avg_changed = average(
+                        self.confidence_grid[y][x]
+                        for (x, y), old, new in zip(slot_coords, current_slot, g)
+                        if old != new
+                    )
+                    # overwrite the current slot if several conditions are met
+                    if all([
+                        g != current_slot,
+                        conf > conf_threshold,
+                        conf > slot_confidence_avg_changed + EPSILON,
+                    ]):
+                        # transfer guess confidence to cell confidence
+                        for (x, y), old, new in zip(slot_coords, current_slot, g):
+                            if old != new:
+                                self.confidence_grid[y][x] = conf                               # cell contradicted
+                            else:
+                                old_conf = self.confidence_grid[y][x]
+                                self.confidence_grid[y][x] = 1 - (1 - old_conf)*(1 - conf)      # cell corroborated
+                        
+                        # overwrite contents of slot with the new guess
+                        puzzle.write_slot(ident, g)
+                        
+                        converged = False
+                        break
+            
+            conf_threshold *= 0.5   # exponential decay
+```
+
+This solver works by maintaining a grid of confidence values (one for each cell). For example:
+
+![](confidence_grid.png)
+
+Confidence in a cell is inherited from the confidence in the guess. Confidence values can be increased or decreased through corroboration or contradiction. In the case that a cell with confidence $c$ is corroborated by a new guess with confidence $c'$, we update according to the following rule:
+
+$$c \gets 1 - (1 - c)(1 - c')$$
+
+Which corresponds to $\mathrm{Prob}(c \lor c')$ if we interpret confidence scores as independent probabilities.
+
+Performance metrics:
+
+```
+{'average_fill_accuracy': 0.704,
+ 'average_fill_percentage': 0.934,
+ 'solver': <class 'solvers.CellConfidenceSolver'>}
+```
+
+
+## Error Analysis
+TODO
+
+
+## What's Next?
+- Improvements to the guesser
+    - a neural encoder model
+    - specific modules for types of clues (e.g. fill-in-the-blank)
+- Improvements to the solver
+    - use a tree-search for finding locally consistent fills
+    - refine notion of cell confidence
