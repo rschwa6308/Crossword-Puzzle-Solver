@@ -137,11 +137,12 @@ If TFIDF does not return any guesses above a meager confidence threshold, then t
 
 
 ## Word2Vec Guesser Attempt
-# Motivation
+### Motivation
 Word2Vec is a useful tool in NLP which maps each word to a vector based on its association with the documents. It is good at detecting the ‘similarity’ between different words as two similar words would result in two similar vectors in the n-dimensional vector space and vice versa. We initially believe this would be a good implementation of guesser as the clues are comprised of short sentences with fewer words than the quizzes we have learned throughout the semester. In theory, Word2Vec would be good at matching two similar clues together by calculating the closeness (cosine similarity) between 2 vectors.
 
 Gensim is a library containing a good implementation of Word2Vec trainer and various pre-trained models. We used modules from this library to train and test the Word2Vec guesser. As a clue has multiple words, we applied an average function `avg_feature_vector` on each clue to obtain the vector representation of each clue. The vectors could also be clustered using `KNearestNeighbors` method and the `guess` function utilizes this property to obtain the nearest n guesses fast. 
 
+### Implementation
 The following code defines the W2VGuesser class(Initializer, training, some utility functions are omitted to make the report concise):
 
 ```python
@@ -191,7 +192,7 @@ class W2VGuesser:
 
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
 ```
-# Visualization
+### Visualization
 As word vectors lives in n-dimensional vector space, it is possible to project each vector onto 2-dimensional plane to observe the closeness between different vectorized clues. To project a vector of higher dimension to a lower dimension space, one common method is Principal Component Analysis (PCA). PCA employs Singular Value Decomposition (SVD) to extract the m-dimensional data from n-dimensional data(n$\geq$m) by preserving data corresponding to m-largest singular values.
 
 ![](w2v_pca.png)
