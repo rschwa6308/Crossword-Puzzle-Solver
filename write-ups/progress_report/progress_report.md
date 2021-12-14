@@ -382,10 +382,9 @@ Regarding the answers of both datasets, the Quiz Bowl answers are usually deriva
 
 In terms of answer format, Quiz Bowl answers are well-spaced and coherent. Crossword answers are concatenated into one word, so in their default form, they are not present in Wikipedia for concatenated multi-word answers. One could use a parser to parse concatenated words into separate words, but there might different viable ways to parse concatenated words into valid English words, so there is information lost in the concatenation.
 
-Our tf-idf guesser is robust to clue-answer data, but this doesn't transfer to Quiz Bowl data due to the differences in the datasets. This is evident from the fact that we received a non-zero accuracy (50-70%) in running our tf-idf guesser on crossword data that is presented in our uploaded video. If our tf-idf guesser trained on crossword data was inherently flawed, it would produce zero accuracy on both Quiz Bowl and Crossword data. 
+Our tf-idf guesser is robust to clue-answer data, but this doesn't transfer to Quiz Bowl data due to the differences in the datasets. This is evident from the fact that we received a non-zero accuracy (50-70%) in running our tf-idf guesser on crossword data that is presented in our uploaded video. If our tf-idf guesser trained on crossword data was inherently flawed, it would produce zero accuracy on both Quiz Bowl and Crossword data. Outputs from `guessing_output.ipynb` for our tf-idf guesses on crossword clue-answers is shown in `outputs/guessing.ipynb.output`. This shows that our tf-idf guesser is working well for crossword test data.
 
 The non-trivial differences between the Quiz Bowl question-answer data and the crossword clue-answer data causes high dissimilarity between question-answer vectors and the clue-answer vectors. This high dissimilarity significantly affects the transferability of a crossword-trained tf-idf guesser to Quiz Bowl data. 
-
 
 ## What's Next?
 - Improvements to the guesser
