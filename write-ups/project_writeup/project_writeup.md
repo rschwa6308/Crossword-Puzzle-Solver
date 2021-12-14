@@ -1,4 +1,4 @@
-# CMSC 470 Final Project: Progress Report
+# CMSC 470 Final Project Writeup
 Russell Schwartz, Chenqi Zhu, Henrique Corte, Ben Tompkins, Dan Song
 11/15/21
 
