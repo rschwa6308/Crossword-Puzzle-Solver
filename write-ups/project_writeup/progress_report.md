@@ -358,11 +358,11 @@ This solver works by maintaining a grid of confidence values (one for each cell)
 
 ![](confidence_grid.png)
 
-Confidence in a cell is inherited from the confidence in the guess. Confidence values can be increased or decreased through corroboration or contradiction. In the case that a cell with confidence $c$ is corroborated by a new guess with confidence $c'$, we update according to the following rule:
+Confidence in a cell is inherited from the confidence in the guess. Confidence values can be increased or decreased through corroboration or contradiction. In the case that a cell with confidence c is corroborated by a new guess with confidence c', we update according to the following rule:
 
-$$c \gets 1 - (1 - c)(1 - c')$$
+c \gets 1 - (1 - c)(1 - c')
 
-Which corresponds to $\mathrm{Prob}(c \lor c')$ if we interpret confidence scores as independent probabilities.
+Which corresponds to \mathrm{Prob}(c \lor c') if we interpret confidence scores as independent probabilities.
 
 Performance metrics:
 
