@@ -193,7 +193,7 @@ class W2VGuesser:
         return list(sorted(guesses_combined, key=lambda item: item[1], reverse=True))
 ```
 ### Visualization
-As word vectors lives in n-dimensional vector space, it is possible to project each vector onto 2-dimensional plane to observe the closeness between different vectorized clues. To project a vector of higher dimension to a lower dimension space, one common method is Principal Component Analysis (PCA). PCA employs Singular Value Decomposition (SVD) to extract the m-dimensional data from n-dimensional data(n$\geq$m) by preserving data corresponding to m-largest singular values.
+As word vectors lives in n-dimensional vector space, it is possible to project each vector onto 2-dimensional plane to observe the closeness between different vectorized clues. To project a vector of higher dimension to a lower dimension space, one common method is Principal Component Analysis (PCA). PCA employs Singular Value Decomposition (SVD) to extract the m-dimensional data from n-dimensional data(n>m) by preserving data corresponding to m-largest singular values.
 
 ![](w2v_pca.png)
 
@@ -358,11 +358,11 @@ This solver works by maintaining a grid of confidence values (one for each cell)
 
 ![](confidence_grid.png)
 
-Confidence in a cell is inherited from the confidence in the guess. Confidence values can be increased or decreased through corroboration or contradiction. In the case that a cell with confidence $c$ is corroborated by a new guess with confidence $c'$, we update according to the following rule:
+Confidence in a cell is inherited from the confidence in the guess. Confidence values can be increased or decreased through corroboration or contradiction. In the case that a cell with confidence ![c](https://latex.codecogs.com/svg.latex?c) is corroborated by a new guess with confidence ![c'](https://latex.codecogs.com/svg.latex?c'), we update according to the following rule:
 
-$$c \gets 1 - (1 - c)(1 - c')$$
+![\Large c\gets1-(1-c)(1-c')](https://latex.codecogs.com/svg.latex?\Large&space;c\gets1-(1-c)(1-c')) 
 
-Which corresponds to $\mathrm{Prob}(c \lor c')$ if we interpret confidence scores as independent probabilities.
+Which corresponds to ![P(c||c')](https://latex.codecogs.com/svg.latex?P(c||c')) if we interpret confidence scores as independent probabilities.
 
 Performance metrics:
 
