@@ -3,7 +3,4 @@ Final project for CMSC470 at UMD - An automated crossword puzzle solver
 
 Data from https://github.com/doshea/nyt_crosswords
 
-**Potential names:**
-- Shortz-Circuit
-- Slot Machine
-- Cluey
+Blog post: https://russ-stuff.com/?p=215
